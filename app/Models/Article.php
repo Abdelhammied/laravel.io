@@ -35,6 +35,7 @@ final class Article extends Model
         'is_pinned',
         'submitted_at',
         'approved_at',
+        'shared_at',
     ];
 
     /**
@@ -43,6 +44,7 @@ final class Article extends Model
     protected $dates = [
         'submitted_at',
         'approved_at',
+        'shared_at',
     ];
 
     public function id(): int
@@ -82,7 +84,7 @@ final class Article extends Model
 
     public function updateSeries(Series $series = null): self
     {
-        if (is_null($series)) {
+        if (null === $series) {
             return $this->removeSeries();
         }
 
@@ -122,7 +124,7 @@ final class Article extends Model
 
     public function isNotSubmitted(): bool
     {
-        return is_null($this->submitted_at);
+        return null === $this->submitted_at;
     }
 
     public function isApproved(): bool
@@ -132,7 +134,7 @@ final class Article extends Model
 
     public function isNotApproved(): bool
     {
-        return is_null($this->approved_at);
+        return null === $this->approved_at;
     }
 
     public function isPublished(): bool
@@ -148,6 +150,16 @@ final class Article extends Model
     public function isPinned(): bool
     {
         return (bool) $this->is_pinned;
+    }
+
+    public function isNotShared(): bool
+    {
+        return null === $this->shared_at;
+    }
+
+    public function isShared(): bool
+    {
+        return ! $this->isNotShared();
     }
 
     public function isAwaitingApproval(): bool
@@ -200,6 +212,16 @@ final class Article extends Model
             $query->whereNull('submitted_at')
                 ->orWhereNull('approved_at');
         });
+    }
+
+    public function scopeShared(Builder $query): Builder
+    {
+        return $query->whereNotNull('shared_at');
+    }
+
+    public function scopeNotShared(Builder $query): Builder
+    {
+        return $query->whereNull('shared_at');
     }
 
     public function scopeForTag(Builder $query, string $tag): Builder
@@ -269,5 +291,20 @@ final class Article extends Model
     public function splitBody($value)
     {
         return $this->split($value);
+    }
+
+    public function markAsShared()
+    {
+        $this->update([
+            'shared_at' => now(),
+        ]);
+    }
+
+    public static function nextForSharing(): ?self
+    {
+        return self::notShared()
+            ->published()
+            ->orderBy('submitted_at', 'asc')
+            ->first();
     }
 }

@@ -23,6 +23,12 @@ class Kernel extends ConsoleKernel
         $schedule->command('backup:clean')->daily()->at('01:00');
         $schedule->command('backup:run')->daily()->at('02:00');
         $schedule->command('horizon:snapshot')->everyFiveMinutes();
+        $schedule->command('post-article-to-twitter')
+            ->everyMinute()
+            ->when(function () {
+                // ~2 posts every 24 hours.
+                return random_int(1, 1440) <= 2;
+            });
     }
 
     /**
