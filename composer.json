@@ -16,6 +16,7 @@
         "guzzlehttp/guzzle": "^6.3",
         "intervention/image": "^2.5",
         "intervention/imagecache": "^2.4",
+        "laravel-notification-channels/twitter": "^4.0",
         "laravel/framework": "^7.0",
         "laravel/horizon": "^4.0",
         "laravel/socialite": "^4.3",
